@@ -1,5 +1,6 @@
 import 'package:app_tarefas/src/model/todo.dart';
 import 'package:app_tarefas/src/widgets/task_checkbox.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,14 +26,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // firestore
 
-  // final FirestoreService _firestoreService = FirestoreService();
+  final FirestoreService _firestoreService = FirestoreService();
   late String _userId;
 
-  /* @override
+  @override
   void initState() {
     super.initState();
-    _carregarUser();  
-  } */
+    _carregarUser();
+  }
 
   @override
   void initState() {
@@ -149,14 +150,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /* void _carregarUser() async {
+  void _carregarUser() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       setState(() {
         _userId = user.uid;
       });
 
-      // tarefas do firestore em tempo real 
+      // tarefas do firestore em tempo real
       _firestoreService.getTodos(_userId).listen((todos) {
         setState(() {
           tarefas = todos;
@@ -164,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       });
     }
-  } */
+  }
 
   void completarTarefa(ToDo todo) {
     setState(() {
