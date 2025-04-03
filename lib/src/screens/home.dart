@@ -17,21 +17,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<ToDo> tarefas = [
-    ToDo(id: '1', titulo: 'Treinar', descricao: '1 hora', checkbox: false),
-    ToDo(id: '2', titulo: 'Estudar', descricao: '3 horas', checkbox: false),
-    ToDo(
-      id: '3',
-      titulo: 'Escutar música',
-      descricao: 'Youtube',
-      checkbox: false,
-    ),
-  ];
-
+  List<ToDo> tarefas = []; // Lista começa vazia
   List<ToDo> _filtrarNota = [];
 
   final TextEditingController _tituloController = TextEditingController();
   final TextEditingController _descricaoController = TextEditingController();
+
+  // final FirestoreService _firestoreService = FirestoreService();
+  late String _userId;
 
   @override
   void initState() {
