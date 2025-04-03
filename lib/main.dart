@@ -1,12 +1,17 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:app_tarefas/src/screens/forgot.dart';
 import 'package:app_tarefas/src/screens/home.dart';
 import 'package:app_tarefas/src/screens/login.dart';
 import 'package:app_tarefas/src/screens/register.dart';
 import 'package:app_tarefas/src/screens/welcome.dart';
 import 'package:app_tarefas/src/theme/app_theme.dart';
-import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const MyApp());
 }
 
@@ -28,30 +33,25 @@ class _MyAppState extends State<MyApp> {
       theme: _darkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
       initialRoute: '/',
       routes: {
+        // add provider depois
         '/':
-            (context) => WelcomeScreen(
-              alternarTema: _alternarTema,
-              darkMode: _darkMode, // adicionar dps o provider
-            ),
+            (context) =>
+                WelcomeScreen(alternarTema: _alternarTema, darkMode: _darkMode),
         '/login':
-            (context) => LoginScreen(
-              alternarTema: _alternarTema,
-              darkMode: _darkMode, // adicionar dps o provider
-            ),
+            (context) =>
+                LoginScreen(alternarTema: _alternarTema, darkMode: _darkMode),
         '/home':
-            (context) => HomeScreen(
-              alternarTema: _alternarTema,
-              darkMode: _darkMode, // adicionar dps o provider
-            ),
+            (context) =>
+                HomeScreen(alternarTema: _alternarTema, darkMode: _darkMode),
         '/register':
             (context) => RegisterScreen(
               alternarTema: _alternarTema,
-              darkMode: _darkMode, // adicionar dps o provider
+              darkMode: _darkMode,
             ),
         '/forgot':
             (context) => ForgotPasswordScreen(
               alternarTema: _alternarTema,
-              darkMode: _darkMode, // adicionar dps o provider
+              darkMode: _darkMode,
             ),
       },
     );
