@@ -23,8 +23,16 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _tituloController = TextEditingController();
   final TextEditingController _descricaoController = TextEditingController();
 
+  // firestore
+
   // final FirestoreService _firestoreService = FirestoreService();
   late String _userId;
+
+  /* @override
+  void initState() {
+    super.initState();
+    _carregarUser();  
+  } */
 
   @override
   void initState() {
@@ -140,6 +148,23 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  /* void _carregarUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _userId = user.uid;
+      });
+
+      // tarefas do firestore em tempo real 
+      _firestoreService.getTodos(_userId).listen((todos) {
+        setState(() {
+          tarefas = todos;
+          _filtrarNota = todos;
+        });
+      });
+    }
+  } */
 
   void completarTarefa(ToDo todo) {
     setState(() {
