@@ -70,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              constraints: const BoxConstraints(maxHeight: 600),
+              height: 500,
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Color(0xFFD5B1E3),
@@ -83,7 +83,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // campo nome
                       TextFormField(
                         controller: _nameController,
                         style: const TextStyle(
@@ -105,8 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         validator: _validarNome,
                       ),
-                      const Expanded(child: SizedBox()),
-                      // campo email
+                      const SizedBox(height: 20),
                       TextFormField(
                         controller: _emailController,
                         style: const TextStyle(
@@ -128,9 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         validator: _validarEmail,
                       ),
-                      const Expanded(child: SizedBox()),
-
-                      // campo senha
+                      const SizedBox(height: 20),
                       TextFormField(
                         controller: _passwordController,
                         validator: (value) {
@@ -177,7 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                       ),
-                      const Expanded(child: SizedBox()),
+                      const Spacer(),
                       Center(
                         child: ElevatedButton(
                           style: ButtonStyle(
@@ -209,9 +205,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                         ),
                       ),
-                      const Expanded(child: SizedBox()),
+                      const Spacer(),
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 40),
+                        padding: const EdgeInsets.only(bottom: 10),
                         child: Align(
                           alignment: Alignment.center,
                           child: GestureDetector(
