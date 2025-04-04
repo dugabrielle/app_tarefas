@@ -92,9 +92,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     tarefas = snapshot.data!;
                     List<ToDo> tarefasPendentes =
-                        tarefas.where((todo) => !todo.checkbox).toList();
+                        _filtrarNota.where((todo) => !todo.checkbox).toList();
                     List<ToDo> tarefasConcluidas =
-                        tarefas.where((todo) => todo.checkbox).toList();
+                        _filtrarNota.where((todo) => todo.checkbox).toList();
 
                     return Column(
                       children: [
@@ -156,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
             alignment: Alignment.bottomCenter,
             child: Container(
               margin: const EdgeInsets.only(bottom: 15, right: 15, left: 10),
-              width: 100,
+              width: 150,
               child: ElevatedButton(
                 onPressed: () {
                   _addNota();
@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Icon(
                   Icons.add,
-                  size: 28,
+                  size: 35,
                   color:
                       Theme.of(context).brightness == Brightness.light
                           ? Colors.black
