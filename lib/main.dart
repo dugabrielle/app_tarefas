@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -12,11 +13,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  runApp(const MyApp());
+  User? user = FirebaseAuth.instance.currentUser;
+
+  runApp(MyApp(initialRoute: user != null ? '/home' : '/'));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -31,9 +36,8 @@ class _MyAppState extends State<MyApp> {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: _darkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
-      initialRoute: '/',
+      initialRoute: widget.initialRoute,
       routes: {
-        // add provider depois
         '/':
             (context) =>
                 WelcomeScreen(alternarTema: _alternarTema, darkMode: _darkMode),

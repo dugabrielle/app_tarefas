@@ -1,4 +1,6 @@
+import 'package:app_tarefas/src/services/firebase_auth.dart';
 import 'package:app_tarefas/src/widgets/input_decorations.dart';
+import 'package:app_tarefas/src/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -15,8 +17,12 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   bool _obscureText = true;
+  bool _isLoading = false;
+
+  final AuthService _auth = AuthService();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -28,6 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _emailController.dispose();
     _nameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -63,8 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              padding: const EdgeInsets.only(top: 20),
-              height: 500,
+              constraints: const BoxConstraints(maxHeight: 600),
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Color(0xFFD5B1E3),
@@ -80,12 +86,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // campo nome
                       TextFormField(
                         controller: _nameController,
-                        style: const TextStyle(color: Colors.black),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 22,
+                        ),
                         decoration: InputStyleDecoration.style().copyWith(
                           labelText: 'Nome de usuário',
                           labelStyle: const TextStyle(
                             color: Colors.black,
-                            fontSize: 18,
+                            fontSize: 22,
                           ),
                           enabledBorder: const UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.black),
@@ -100,12 +109,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // campo email
                       TextFormField(
                         controller: _emailController,
-                        style: const TextStyle(color: Colors.black),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 22,
+                        ),
                         decoration: InputStyleDecoration.style().copyWith(
                           labelText: 'Email',
                           labelStyle: const TextStyle(
                             color: Colors.black,
-                            fontSize: 18,
+                            fontSize: 22,
                           ),
                           enabledBorder: const UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.black),
@@ -120,6 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       // campo senha
                       TextFormField(
+                        controller: _passwordController,
                         validator: (value) {
                           if (value!.isEmpty) {
                             return "Por favor, digite a senha.";
@@ -133,12 +146,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           }
                         },
                         obscureText: _obscureText,
-                        style: const TextStyle(color: Colors.black),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 22,
+                        ),
                         decoration: InputStyleDecoration.style().copyWith(
                           labelText: 'Senha',
                           labelStyle: const TextStyle(
                             color: Colors.black,
-                            fontSize: 18,
+                            fontSize: 22,
                           ),
                           enabledBorder: const UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.black),
@@ -175,18 +191,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const EdgeInsets.all(16),
                             ),
                           ),
-                          onPressed: () {
-                            _formKey.currentState!.validate();
-                            // Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-                          },
-                          child: const Text(
-                            'Registrar',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          onPressed:
+                              _isLoading ? null : () => registrar(context),
+                          child:
+                              _isLoading
+                                  ? const CircularProgressIndicator(
+                                    strokeWidth: 2.0,
+                                    color: Color.fromARGB(255, 22, 87, 139),
+                                  )
+                                  : const Text(
+                                    'Registrar',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                         ),
                       ),
                       const Expanded(child: SizedBox()),
@@ -204,6 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 style: TextStyle(
                                   color: Color(0xFF2E2E2E),
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 18,
                                 ),
                                 children: [
                                   TextSpan(
@@ -211,6 +232,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     style: TextStyle(
                                       color: Color(0xFF003366),
                                       fontWeight: FontWeight.bold,
+                                      fontSize: 18,
                                     ),
                                   ),
                                 ],
@@ -251,6 +273,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return true; // se senha for válida
     } else {
       return false;
+    }
+  }
+
+  void registrar(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final name = _nameController.text.trim();
+
+    try {
+      await _auth.signUpWithEmailPassword(email, password, name);
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (!context.mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackbarStyle.snackStyle(e.toString()));
     }
   }
 }
