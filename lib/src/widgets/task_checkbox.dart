@@ -19,31 +19,37 @@ class TaskCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     Color titleColor = Theme.of(context).colorScheme.tertiary;
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(5),
       child: ListTile(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 25,
+          vertical: 10,
+        ),
         tileColor: titleColor,
-        leading: Checkbox(
-          value: todo.checkbox,
-          onChanged: (bool? value) {
-            completarTarefa(todo);
-          },
-          activeColor: Colors.black,
-          checkColor: Colors.white,
-          hoverColor: const Color(0xFFECD4F0),
-          side: const BorderSide(color: Colors.black, width: 2),
+        leading: Transform.scale(
+          scale: 1.2,
+          child: Checkbox(
+            value: todo.checkbox,
+            onChanged: (bool? value) {
+              completarTarefa(todo);
+            },
+            activeColor: Colors.black,
+            checkColor: Colors.white,
+            hoverColor: const Color(0xFFECD4F0),
+            side: const BorderSide(color: Colors.black, width: 2),
+          ),
         ),
         title: Text(
           todo.titulo,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontSize: 16,
+            fontSize: 24,
             decoration: todo.checkbox ? TextDecoration.lineThrough : null,
           ),
         ),
         subtitle: Text(
           todo.descricao ?? '',
-          style: const TextStyle(color: Colors.grey, fontSize: 15),
+          style: const TextStyle(color: Colors.grey, fontSize: 22),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -53,7 +59,7 @@ class TaskCheckbox extends StatelessWidget {
                 excluirTarefa(todo.id);
               },
               icon: const Icon(Icons.delete),
-              iconSize: 25,
+              iconSize: 35,
               color: Colors.grey[500],
               hoverColor: const Color(0xFFECD4F0),
             ),
@@ -63,7 +69,7 @@ class TaskCheckbox extends StatelessWidget {
                 editarTarefa(todo);
               },
               icon: const Icon(Icons.edit_note),
-              iconSize: 25,
+              iconSize: 35,
               color: Theme.of(context).colorScheme.secondary,
               hoverColor: const Color(0xFFECD4F0),
             ),

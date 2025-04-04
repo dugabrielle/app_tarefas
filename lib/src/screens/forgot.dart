@@ -1,10 +1,13 @@
+import 'package:app_tarefas/src/services/firebase_auth.dart';
+import 'package:app_tarefas/src/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen(
-      {super.key,
-      required void Function() alternarTema,
-      required bool darkMode});
+  const ForgotPasswordScreen({
+    super.key,
+    required void Function() alternarTema,
+    required bool darkMode,
+  });
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -12,6 +15,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
+
+  final AuthService _auth = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -80,14 +85,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 50),
                     child: TextFormField(
                       controller: _emailController,
-                      style: const TextStyle(
-                        color: Colors.black,
-                      ),
+                      style: const TextStyle(color: Colors.black, fontSize: 22),
                       decoration: const InputDecoration(
                         labelText: 'E-mail',
                         labelStyle: TextStyle(
                           color: Colors.black,
-                          fontSize: 18,
+                          fontSize: 22,
                         ),
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: Colors.black),
@@ -102,19 +105,50 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Center(
                     child: ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor:
-                            WidgetStateProperty.all(const Color(0xFF491CA8)),
-                        fixedSize:
-                            WidgetStateProperty.all(const Size.fromWidth(130)),
-                        padding:
-                            WidgetStateProperty.all(const EdgeInsets.all(16)),
+                        backgroundColor: WidgetStateProperty.all(
+                          const Color(0xFF491CA8),
+                        ),
+                        fixedSize: WidgetStateProperty.all(
+                          const Size.fromWidth(130),
+                        ),
+                        padding: WidgetStateProperty.all(
+                          const EdgeInsets.all(16),
+                        ),
                       ),
-                      onPressed: () {},
+                      onPressed: () async {
+                        String email = _emailController.text.trim();
+
+                        if (email.isEmpty) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackbarStyle.snackStyle(
+                              'Por favor, insira um e-mail válido.',
+                            ),
+                          );
+                          return;
+                        }
+
+                        try {
+                          await _auth.sendPasswordResetEmail(email);
+
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackbarStyle.snackStyle(
+                              'E-mail de redefinição enviado!',
+                            ),
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackbarStyle.snackStyle(e.toString()),
+                          );
+                        }
+                      },
                       child: const Text(
                         'Enviar',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

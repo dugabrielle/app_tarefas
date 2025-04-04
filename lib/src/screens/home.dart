@@ -1,6 +1,7 @@
 import 'package:app_tarefas/src/model/todo.dart';
+import 'package:app_tarefas/src/services/firebase_auth.dart';
+import 'package:app_tarefas/src/services/firebase_firestore.dart';
 import 'package:app_tarefas/src/widgets/task_checkbox.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,27 +19,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<ToDo> tarefas = []; // Lista começa vazia
+  List<ToDo> tarefas = [];
   List<ToDo> _filtrarNota = [];
 
   final TextEditingController _tituloController = TextEditingController();
   final TextEditingController _descricaoController = TextEditingController();
 
-  // firestore
-
   final FirestoreService _firestoreService = FirestoreService();
-  late String _userId;
 
   @override
-  void initState() {
-    super.initState();
-    _carregarUser();
+  void dispose() {
+    _tituloController.dispose();
+    _descricaoController.dispose();
+    super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    _filtrarNota = tarefas;
+    _carregarUser();
   }
 
   @override
@@ -58,62 +57,97 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     'Tarefas',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 24,
+                      fontSize: 26,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 2,
                     ),
                   ),
                 ),
-                if (tarefas.where((todo) => !todo.checkbox).isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20.0),
-                    child: Center(
-                      child: Text(
-                        'Nenhuma tarefa encontrada.',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: Theme.of(context).colorScheme.primary,
+                StreamBuilder<List<ToDo>>(
+                  stream: _firestoreService.getTodos(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(child: Text('${snapshot.error}'));
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 20.0),
+                        child: Center(
+                          child: Text(
+                            'Nenhuma tarefa encontrada.',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 22,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                Column(
-                  children: [
-                    for (var todo in tarefas.where((todo) => !todo.checkbox))
-                      TaskCheckbox(
-                        todo: todo,
-                        completarTarefa: completarTarefa,
-                        excluirTarefa: excluirTarefa,
-                        editarTarefa: editarTarefa,
-                      ),
-                  ],
-                ),
-                if (tarefas.where((todo) => todo.checkbox).isNotEmpty) ...[
-                  const Divider(color: Colors.grey),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Tarefas Concluídas',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-                ],
-                Column(
-                  children: [
-                    for (var todo in tarefas.where((todo) => todo.checkbox))
-                      TaskCheckbox(
-                        todo: todo,
-                        completarTarefa: completarTarefa,
-                        excluirTarefa: excluirTarefa,
-                        editarTarefa: editarTarefa,
-                      ),
-                  ],
+                      );
+                    }
+
+                    tarefas = snapshot.data!;
+                    List<ToDo> tarefasPendentes =
+                        tarefas.where((todo) => !todo.checkbox).toList();
+                    List<ToDo> tarefasConcluidas =
+                        tarefas.where((todo) => todo.checkbox).toList();
+
+                    return Column(
+                      children: [
+                        if (tarefasPendentes.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0),
+                            child: Center(
+                              child: Text(
+                                'Nenhuma tarefa pendente.',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 22,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          for (var todo in tarefasPendentes)
+                            TaskCheckbox(
+                              todo: todo,
+                              completarTarefa: completarTarefa,
+                              excluirTarefa: excluirTarefa,
+                              editarTarefa: editarTarefa,
+                            ),
+
+                        if (tarefasConcluidas.isNotEmpty) ...[
+                          const Divider(color: Colors.grey),
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Tarefas Concluídas',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                          ),
+                          for (var todo in tarefasConcluidas)
+                            TaskCheckbox(
+                              todo: todo,
+                              completarTarefa: completarTarefa,
+                              excluirTarefa: excluirTarefa,
+                              editarTarefa: editarTarefa,
+                            ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -150,61 +184,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _carregarUser() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+  // tarefas do firestore em tempo real
+  void _carregarUser() {
+    _firestoreService.getTodos().listen((todos) {
+      if (!mounted) return;
       setState(() {
-        _userId = user.uid;
+        tarefas = todos;
+        _filtrarNota = todos;
       });
-
-      // tarefas do firestore em tempo real
-      _firestoreService.getTodos(_userId).listen((todos) {
-        setState(() {
-          tarefas = todos;
-          _filtrarNota = todos;
-        });
-      });
-    }
+    });
   }
 
   void completarTarefa(ToDo todo) {
     setState(() {
       todo.checkbox = !todo.checkbox;
     });
-  }
 
-  void excluirTarefa(String id) {
-    setState(() {
-      tarefas.removeWhere((tarefa) => tarefa.id == id);
-    });
+    // atualiza
+    _firestoreService.editarTarefa(todo.id, todo);
   }
 
   void editarTarefa(ToDo todo) {
-    // dialogoEdit
-  }
+    _tituloController.text = todo.titulo;
+    _descricaoController.text = todo.descricao ?? "";
 
-  void filtrarNota(String keyword) {
-    setState(() {
-      if (keyword.isEmpty) {
-        tarefas = _filtrarNota; // recupera a lista se o campo estiver vazio
-      } else {
-        tarefas =
-            _filtrarNota
-                .where(
-                  (todo) =>
-                      todo.titulo.toLowerCase().contains(
-                        keyword.toLowerCase(),
-                      ) ||
-                      todo.descricao!.toLowerCase().contains(
-                        keyword.toLowerCase(),
-                      ),
-                )
-                .toList();
-      }
-    });
-  }
-
-  void _addNota() {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -212,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Adicionar Nota'),
+              title: const Text('Editar Nota'),
               content: Container(
                 constraints: const BoxConstraints(maxHeight: 300),
                 child: SingleChildScrollView(
@@ -223,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         controller: _tituloController,
                         decoration: const InputDecoration(labelText: 'Título'),
                         maxLength: 80,
-                        maxLines: null, // poderá ocupar várias linhas
+                        maxLines: null,
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 10),
@@ -261,11 +264,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       onPressed: () {
                         if (_tituloController.text.isEmpty) {
-                          setState(
-                            () {},
-                          ); // atualiza o estado para mostrar o erro
+                          setState(() {});
                           return;
                         }
+
+                        todo.titulo = _tituloController.text;
+                        todo.descricao = _descricaoController.text;
+
+                        // atualiza
+                        _firestoreService.editarTarefa(todo.id, todo);
+
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.save, color: Colors.purple),
@@ -281,40 +289,212 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void filtrarNota(String keyword) {
+    setState(() {
+      if (keyword.isEmpty) {
+        _filtrarNota = List.from(tarefas); // recupera a lista original
+      } else {
+        _filtrarNota =
+            tarefas
+                .where(
+                  (todo) =>
+                      todo.titulo.toLowerCase().contains(
+                        keyword.toLowerCase(),
+                      ) ||
+                      (todo.descricao?.toLowerCase().contains(
+                            keyword.toLowerCase(),
+                          ) ??
+                          false),
+                )
+                .toList();
+      }
+    });
+  }
+
+  void _addNota() {
+    _tituloController.clear();
+    _descricaoController.clear();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text(
+                'Adicionar Nota',
+                style: TextStyle(fontSize: 28),
+              ),
+
+              content: Container(
+                constraints: const BoxConstraints(maxHeight: 400),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: _tituloController,
+                        decoration: const InputDecoration(
+                          labelText: 'Título',
+                          labelStyle: TextStyle(fontSize: 18),
+                        ),
+                        maxLength: 80,
+                        maxLines: null,
+                        style: const TextStyle(fontSize: 26),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _descricaoController,
+                        decoration: const InputDecoration(
+                          labelText: 'Descrição (opcional)',
+                          labelStyle: TextStyle(fontSize: 18),
+                        ),
+                        maxLength: 80,
+                        maxLines: null,
+                        style: const TextStyle(fontSize: 26),
+                      ),
+                      if (_tituloController.text.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'O Título não pode ser vazio!',
+                            style: TextStyle(color: Colors.red, fontSize: 17),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.close, color: Colors.purple),
+                      iconSize: 30,
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        if (_tituloController.text.isEmpty) {
+                          setState(() {});
+                          return;
+                        }
+
+                        final novaTarefa = ToDo(
+                          id: DateTime.now().toString(), // gera o id
+                          titulo: _tituloController.text,
+                          descricao: _descricaoController.text,
+                          checkbox: false,
+                        );
+
+                        await _firestoreService.addNota(novaTarefa);
+
+                        if (!context.mounted) return;
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.save, color: Colors.purple),
+                      iconSize: 30,
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void excluirTarefa(String id) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Excluir Nota'),
+          content: const Text(
+            'Tem certeza que deseja excluir? A nota será permanentemente perdida.',
+            style: TextStyle(fontSize: 18),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  tarefas.removeWhere((nota) => nota.id == id);
+                });
+                _firestoreService.excluirTarefa(id);
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Excluir',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void logout(BuildContext context) async {
+    final auth = AuthService();
+    await auth.logout();
+
+    if (context.mounted) {
+      Navigator.pushReplacementNamed(context, '/');
+    }
+  }
+
   AppBar appBarMethod(BuildContext context) {
     return AppBar(
       toolbarHeight: 80,
       elevation: 0,
       automaticallyImplyLeading: false,
       title: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              child: Text(
-                'ToDo App',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+            child: Text(
+              'ToDo App',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontSize: 28),
             ),
           ),
+          const SizedBox(width: 20),
           IconButton(
             icon: Icon(
               widget.darkMode ? Icons.nightlight_round : Icons.wb_sunny,
+              size: 30,
             ),
             onPressed: widget.alternarTema,
           ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.logout,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                ),
+          const SizedBox(width: 10),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: IconButton(
+              onPressed: () => logout(context),
+              icon: Icon(
+                Icons.logout,
+                size: 30,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
           ),
@@ -325,28 +505,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   buscarNota() {
     return Container(
-      padding: const EdgeInsets.all(15),
-      height: 50,
+      padding: const EdgeInsets.all(10),
+      height: 65,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: TextField(
-        onChanged: filtrarNota,
-        style: const TextStyle(color: Colors.grey),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 10,
+      child: Center(
+        child: TextField(
+          onChanged: filtrarNota,
+          style: const TextStyle(color: Colors.grey, fontSize: 20),
+          decoration: InputDecoration(
+            isCollapsed: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 12,
+            ),
+            prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 30),
+            prefixIconConstraints: const BoxConstraints(
+              minHeight: 35,
+              minWidth: 40,
+            ),
+            border: InputBorder.none,
+            hintText: "Pesquisar",
+            hintStyle: TextStyle(color: Colors.grey[700], fontSize: 20),
           ),
-          prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 25),
-          prefixIconConstraints: const BoxConstraints(
-            maxHeight: 20,
-            minWidth: 25,
-          ),
-          border: InputBorder.none,
-          hintText: "Pesquisar",
-          hintStyle: TextStyle(color: Colors.grey[700]),
         ),
       ),
     );
