@@ -12,6 +12,11 @@ class SnackbarStyle {
       ),
       backgroundColor: Color(0xFF3B3B3B),
       behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 2),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8.0)),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
     );
   }
 }
