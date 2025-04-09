@@ -26,6 +26,7 @@ class TaskCheckbox extends StatelessWidget {
           horizontal: 25,
           vertical: 10,
         ),
+         isThreeLine: true,
         tileColor: titleColor,
         leading: Transform.scale(
           scale: 1.2,
@@ -63,6 +64,7 @@ class TaskCheckbox extends StatelessWidget {
               color: Colors.grey[500],
               hoverColor: const Color(0xFFECD4F0),
             ),
+           
             const SizedBox(width: 5),
             IconButton(
               onPressed: () {
