@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen(
-      {super.key,
-      required bool darkMode,
-      required void Function() alternarTema});
+  const WelcomeScreen({super.key});
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -62,7 +59,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       foregroundColor: Colors.white,
                       minimumSize: const Size(150, 50),
                       textStyle: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w600),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     onPressed: () {
                       Navigator.pushNamed(context, '/login');
@@ -76,7 +75,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       foregroundColor: Colors.black,
                       minimumSize: const Size(150, 50),
                       textStyle: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w600),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     onPressed: () {
                       Navigator.pushNamed(context, '/register');
@@ -125,7 +126,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     onPressed: () {},
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
