@@ -6,14 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
-  final void Function() alternarTema;
-  final bool darkMode;
-
-  const LoginScreen({
-    required this.alternarTema,
-    required this.darkMode,
-    super.key,
-  });
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -36,10 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
         stream: _auth.authStateChanges,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return HomeScreen(
-              alternarTema: widget.alternarTema,
-              darkMode: widget.darkMode,
-            );
+            return HomeScreen();
           }
 
           return Stack(

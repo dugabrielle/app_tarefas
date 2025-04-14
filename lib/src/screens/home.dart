@@ -1,18 +1,14 @@
 import 'package:app_tarefas/src/model/todo.dart';
+import 'package:app_tarefas/src/provider/theme_provider.dart';
 import 'package:app_tarefas/src/services/firebase_auth.dart';
 import 'package:app_tarefas/src/services/firebase_firestore.dart';
+import 'package:app_tarefas/src/theme/app_theme.dart';
 import 'package:app_tarefas/src/widgets/task_checkbox.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({
-    super.key,
-    required this.alternarTema,
-    required this.darkMode,
-  });
-
-  final VoidCallback alternarTema;
-  final bool darkMode;
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -463,6 +459,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   AppBar appBarMethod(BuildContext context) {
+    final provider = Provider.of<ThemeProvider>(context);
     return AppBar(
       toolbarHeight: 80,
       elevation: 0,
@@ -481,10 +478,13 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 20),
           IconButton(
             icon: Icon(
-              widget.darkMode ? Icons.nightlight_round : Icons.wb_sunny,
+              provider.theme == AppTheme.darkTheme
+                  ? Icons.nightlight_round
+                  : Icons.wb_sunny,
+
               size: 30,
             ),
-            onPressed: widget.alternarTema,
+            onPressed: () => provider.alternarTema(),
           ),
           const SizedBox(width: 10),
           MouseRegion(

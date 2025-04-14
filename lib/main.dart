@@ -1,13 +1,14 @@
+import 'package:app_tarefas/src/provider/theme_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:app_tarefas/src/screens/forgot.dart';
 import 'package:app_tarefas/src/screens/home.dart';
 import 'package:app_tarefas/src/screens/login.dart';
 import 'package:app_tarefas/src/screens/register.dart';
 import 'package:app_tarefas/src/screens/welcome.dart';
-import 'package:app_tarefas/src/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,42 +29,32 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool _darkMode = false;
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
-      theme: _darkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
-      initialRoute: widget.initialRoute,
-      routes: {
-        '/':
-            (context) =>
-                WelcomeScreen(alternarTema: _alternarTema, darkMode: _darkMode),
-        '/login':
-            (context) =>
-                LoginScreen(alternarTema: _alternarTema, darkMode: _darkMode),
-        '/home':
-            (context) =>
-                HomeScreen(alternarTema: _alternarTema, darkMode: _darkMode),
-        '/register':
-            (context) => RegisterScreen(
-              alternarTema: _alternarTema,
-              darkMode: _darkMode,
-            ),
-        '/forgot':
-            (context) => ForgotPasswordScreen(
-              alternarTema: _alternarTema,
-              darkMode: _darkMode,
-            ),
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      builder: (context, child) {
+        final provider = Provider.of<ThemeProvider>(context);
+        return MaterialApp(
+          title: 'Flutter Demo',
+          debugShowCheckedModeBanner: false,
+          theme: provider.theme,
+          initialRoute: widget.initialRoute,
+          routes: {
+            '/': (context) => WelcomeScreen(),
+            '/login': (context) => LoginScreen(),
+            '/home': (context) => HomeScreen(),
+            '/register': (context) => RegisterScreen(),
+            '/forgot': (context) => ForgotPasswordScreen(),
+          },
+        );
       },
     );
   }
 
-  void _alternarTema() {
+  /* void _alternarTema() {
     setState(() {
       _darkMode = !_darkMode;
-    });
-  }
+    }); 
+  } */
 }

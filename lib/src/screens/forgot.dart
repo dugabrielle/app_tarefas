@@ -3,11 +3,7 @@ import 'package:app_tarefas/src/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({
-    super.key,
-    required void Function() alternarTema,
-    required bool darkMode,
-  });
+  const ForgotPasswordScreen({super.key});
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();

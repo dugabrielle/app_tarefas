@@ -4,11 +4,7 @@ import 'package:app_tarefas/src/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({
-    super.key,
-    required bool darkMode,
-    required void Function() alternarTema,
-  });
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
